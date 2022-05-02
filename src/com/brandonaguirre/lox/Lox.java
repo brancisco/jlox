@@ -8,8 +8,6 @@ import java.nio.file.Files;
 import java.nio.file.Paths;
 import java.util.List;
 
-// import com.brandonaguirre.lox.ErrorReporter;
-
 public class Lox {
     // use to handle error reporting
     static ErrorReporter errorReporter = new ErrorReporter();
@@ -48,7 +46,6 @@ public class Lox {
     private static void run(String source) {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
-
         for (Token token : tokens) {
             System.out.println(token);
         }

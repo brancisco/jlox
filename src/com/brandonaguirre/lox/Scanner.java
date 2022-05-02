@@ -41,7 +41,7 @@ class Scanner {
         this.source = source;
     }
 
-    List<Token> scanTokens() {
+    public List<Token> scanTokens() {
         while (!isEOF()) {
             start = current;
             scanToken();
@@ -52,7 +52,7 @@ class Scanner {
     }
 
     private void scanToken() {
-        char ch = source.charAt(current);
+        char ch = advance();
 
         switch (ch) {
             case '(': addToken(LEFT_PAREN); break;
@@ -96,7 +96,7 @@ class Scanner {
                 if (isDigit(ch)) {
                     scanNumber();
                 } else if (isAlpha(ch)) {
-                    scanIdentifier();;
+                    scanIdentifier();
                 } else {
                     Lox.errorReporter.error(line, "Unexpected character.");
                 }
@@ -151,7 +151,6 @@ class Scanner {
         }
         // consume the closing "
         advance();
-
         String value = source.substring(start + 1, current - 1);
         addToken(STRING, value);
     }

@@ -4,6 +4,13 @@ I'm following along in the book "Crating Interpreters" by Robert Nystrom (2015-2
 
 In this repo I'll be following along with some modifications for the first interpreter "jlox" which is written in Java.
 
+## Build & Run
+
+```
+javac -d classes src/com/brandonaguirre/lox/*.java
+java -cp classes com.brandonaguirre.lox.Lox
+```
+
 ## Scanning (Lexing)
 
 Our first step in this journey is *scanning*. During the process of scanning we'll create *tokens* which will be then used in the next step (parsing.)
