@@ -6,9 +6,14 @@ In this repo I'll be following along with some modifications for the first inter
 
 ## Build & Run
 
-```
+```sh
+# build and run main lox interpreter
 javac -d classes src/com/brandonaguirre/lox/*.java
 java -cp classes com.brandonaguirre.lox.Lox
+
+# build and run ast generation
+javac -d classes/ ./src/com/brandonaguirre/tool/*.java
+java -cp classes com.brandonaguirre.tool.GenerateAst ./src/com/brandonaguirre/lox/
 ```
 
 ## Scanning (Lexing)
