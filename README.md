@@ -1,6 +1,6 @@
 # An Exercise In Interpreters
 
-I'm following along in the book "Crating Interpreters" by Robert Nystrom (2015-2020) to build a better understanding of how interpreters and compilers work.
+I'm following along in the book "Crafting Interpreters" by Robert Nystrom (2015-2020) to build a better understanding of how interpreters and compilers work.
 
 In this repo I'll be following along with some modifications for the first interpreter "jlox" which is written in Java.
 
