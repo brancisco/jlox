@@ -11,6 +11,7 @@ import java.util.List;
 public class Lox {
     // use to handle error reporting
     static ErrorReporter errorReporter = new ErrorReporter();
+    private static final Interpreter interpreter = new Interpreter();
 
     public static void main(String[] args) throws IOException {
         if (args.length > 1) {
@@ -28,6 +29,7 @@ public class Lox {
         run(new String(bytes, Charset.defaultCharset()));
         // had an error handle exit
         if (errorReporter.hadError()) System.exit(65);
+        if (errorReporter.hadRuntimeError()) System.exit(70);
     }
 
     private static void runPrompt() throws IOException {
@@ -47,11 +49,17 @@ public class Lox {
         Scanner scanner = new Scanner(source);
         List<Token> tokens = scanner.scanTokens();
 
+        // for (Token token: tokens) {
+        //     System.out.print( "{" + token.toString() + "} ");
+        // }
+        // System.out.println("");
+
         Parser parser = new Parser(tokens);
         Expr expr = parser.parse();
 
         if (errorReporter.hadError()) return;
 
-        System.out.println(new AstPrinter().print(expr));
+        // System.out.println(new AstPrinter().print(expr));
+        interpreter.interpret(expr);
     }
 }
