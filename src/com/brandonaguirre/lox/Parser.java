@@ -160,7 +160,7 @@ class Parser {
     }
 
     private Token consume(TokenType type, String message) {
-        if (match(type)) return advance();
+        if (check(type)) return advance();
         throw error(peek(), message);
     }
 
