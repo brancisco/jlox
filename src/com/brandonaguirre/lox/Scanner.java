@@ -167,7 +167,7 @@ class Scanner {
 
     private boolean match(char expected) {
         if (isEOF()) return false;
-        if (current != expected) return false;
+        if (source.charAt(current) != expected) return false;
 
         current ++;
         return true;
