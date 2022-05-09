@@ -118,7 +118,7 @@ fun returnSum(a, b) {
 
 ### Classes
 
-```
+```java
 class Breakfast {
     cook() {
         print "Eggs a-fryin'!";
@@ -288,6 +288,175 @@ abstract class Expr {
 }
 ```
 
-## Parsing
+## Parsing Expressions
+
+Okay things are starting to get exciting. We scanned our source code and found the tokens using our lexical grammar. We decided on a way to represent our AST and expressions, so now we need to parse the expressions hidden in our tokens.
+
+> Recommended read: "Compliers: Principles, Techniques, and Tools"
+
+In the last section we talked about our grammar, it's precedence, and associativity. That grammar was written to be **right-recursive** intentionally so that we wouldn't have any issues with our parsing method of choice - Recursive Descent Parsing. Using left recursion in our grammar would cause issues because a function would call itself until a stack error occurs instead of moving on to other functions in the grammar. Perhaps an example is in order:
+
+```java
+// consider the following left-recursive production
+// factor -> factor ( "/" | "*" ) unary | unary ;
+
+// the recursive descent function for the production above
+public Expr factor() {
+    Expr left = factor();
+    // I can already stop here.. as you can see we'll just
+    // recurse ad nauseam until we blow the stack
+}
+
+// now consider the following right-recursive production
+// factor -> unary ( ( "/" | "*" ) unary )* ;
+
+// the recursive descent function for the production above
+public Expr factor() {
+    Expr expr = unary();
+
+    while (match(SLASH, STAR)) {
+        Token operator = previous();
+        Expr right = unary();
+        expr = new Expr.Binary(expr, operator, right);
+    }
+
+    return expr;
+}
+```
+
+Although both of these production are left associative and valid, the rule doesn't quite fit how we'd like to code it. Choosing a grammar that fits our model is easier to follow along while coding.
+
+### Recursive Descent Parsing
+
+Recursive descent is a simple (but powerful) way to build a parser. Recursive descent is considered a top down parser. We walk from the outermost grammar down to the innermost sub-expressions.
+
+```
+Grammar  |Precedence
+Top      |     Lower
+-        |         -
+| ---------------- |
+| Equality         |
+| ---------------- |
+| Comparison       |
+| ---------------- |
+| Addition         |
+| ---------------- |
+| Multiplication   |
+| ---------------- |
+| Unary            |
+| ---------------- |
+-       |          -
+Bottom  |    Higher
+```
+
+Probably the way to best understand what recursive descent is doing is to think of it as a literal translation of the grammar's rules into imperative code.
+
+Let's go through a couple examples of translating some grammar rules into recursive code. Take a look at the toy grammar below.
+
+```
+expression -> add
+add        -> multiply ( "+" multiply )*
+multiply   -> number ( "*" number )*
+number     -> ( [1-9][0-9]* | [0-9] )
+```
+
+And lets walk through a couple examples to make sure our grammar is what we want. Oh and what is it we want by the way? We want:
+
+- addition
+- multiplication
+- multiplication takes precedence over addition
+- we can have as many additions or multiplications as we want
+
+Okay here are some examples:
+
+```
+1 + 1
+-----
+expression
+add
+multiply ( "+" multiply )*
+number ( "+" multiply )*
+1 ( "+" multiply )*
+1 + multiply
+1 + ( number ( "*" number )* )
+1 + number
+1 + 1
+
+1 + 2 * 3
+---------
+expression
+add
+multiply ( "+" multiply )*
+number ( "+" multiply )*
+1 ( "+" multiply )*
+1 + multiply
+1 + ( number ( "*" number )* )
+1 + ( 2 ( "*" number )* )
+1 + ( 2 * number )
+1 + 2 * 3
+```
+
+So we see we can perform some additions and multiplications, but what about precedence? Does the `1 + 2 * 3` evaluate to be? `1 + (2 * 3) = 7` or `(1 + 2) * 3 = 9`. Well we said earlier we want multiplication to take precedence.
+
+In one sense, we've answered this question with our grammar. Rules with higher precedence are lower in the grammar. This means multiplication will have the higher precedence. We're still missing how this precedence is taken care of with recursive descent. Let's take a look at an example:
+
+```java
+public class Parser {
+    private Expr expression() {
+        return add();
+    }
+
+    private Expr add() {
+        Expr expr = multiply();
+
+        while (match(PLUS)) {
+            Token operator = previous();
+            Expr right = multiply();
+            expr = new Expr.Binary(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    private Expr multiply() {
+        Expr expr = number();
+
+        while (match(STAR)) {
+            Token operator = previous();
+            Expr right = number();
+            expr = new Expr.Binary(expr, operator, right);
+        }
+
+        return expr;
+    }
+
+    private Expr number() {
+        if (match(NUMBER)) {
+            return new Expr.Literal(previous().literal);
+        }
+        throw error(peek(), "Expect number.");
+    }
+}
+```
+
+With the above parser, its easier to see how our precedence works out. In the `add()` function we consume `PLUS` tokens and nest multiplication expressions inside of those addition expressions. When we evaluate, we'll need to evaluate those most inner expressions first! Boom precedence taken care of.
+
+Oh yea, what about **associativity**? That detail is taken care of in our implementation above. We nest expressions in our while loop on the left side of the `Binary` expressions. So `1 + 2 + 3` becomes `Binary(Binary(1, "+", 2), "+", 3)`. Then naturally, viewing as a tree, we would evaluate the leaf nodes first, and evaluate `1 + 2` then evaluate `3 + 3` finally returning `6`.
+
+Finally, here is some other syntax in our grammar we might run into and a mapping of how we would represent that in code
+
+```
+Terminal    -> consume a token
+Nonterminal -> call to rule's function
+|           -> if/switch statement
+* or +      -> while/for loop
+?           -> if statement
+```
+
+### Handling Syntax Errors
+
+TODO
+
+## Evaluating Expressions
 
 TODO
