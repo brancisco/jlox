@@ -2,7 +2,9 @@
 
 I'm following along in the book "Crafting Interpreters" by Robert Nystrom (2015-2020) to build a better understanding of how interpreters and compilers work.
 
-In this repo I'll be following along with some modifications for the first interpreter "jlox" which is written in Java.
+In this repo I'll be following along with some modifications for the first interpreter "jlox" which is written in Java. If you want a speed summary of the steps to build an interpreter, do read the rest of the readme!
+
+Again the main point of this repo is just a learning exercise and a place for me to come back to for some cliff notes of the book. If you're reading this, please feel free to continue, but definitely check out the book "Crafting Interpreters" it is so great!
 
 ## Build & Run
 
@@ -455,7 +457,23 @@ Nonterminal -> call to rule's function
 
 ### Handling Syntax Errors
 
-TODO
+Wow, a syntax error. Now what? We need to do a couple things here:
+
+- Detect and report error
+- NO crashing and NO hanging
+
+and in addition:
+
+- Be fast
+- Report as many errors as there are
+- minimize *cascaded* errors
+
+In order to achieve some of these things, when we run into an error, we want to be able to continue to parse to find as many errors as possible. This is called **error recovery**. Author Robert Nystrom suggests we handle errors using **panic mode** which is apparently a tried and true method.
+
+> What other error recovery methods are there? See **statement mode**.
+
+When we run into an error we need to get the parsers state and sequence of forthcoming tokens aligned again. This is called **synchronization**. The general method to do this is to pick some rule in our grammar that will mark the *synchronization point*. The easiest thing to do is use the end or beginning of a statement. The semicolon!
+In order to do this we need to jump out of whatever rule we were in the middle of parsing and start searching for our synchronization point. To jump out in our recursive descent parser in Java, we'll throw an error to clear the call stack and catch the error high up where appropriate.
 
 ## Evaluating Expressions
 
