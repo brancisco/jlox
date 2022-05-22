@@ -477,4 +477,57 @@ In order to do this we need to jump out of whatever rule we were in the middle o
 
 ## Evaluating Expressions
 
+In jlox we're using a **tree-walk** interpreter implementation. So we'll just be evaluating the nodes of our AST on the fly one node at a time while we walk through the branches and nodes of the tree. We'll use that visitor pattern to implement the interpreting. What we're essentially doing is visiting our nodes and converting them to valid Java. One thing is that we need to be mindful of our implementation details. We'll make decisions that will pin down some of our language semantics.
+
+> So this section is actually pretty simple and the code is in the *Interpreter.java* file. By the end of the entire implementation that file might look a bit different than it does right now. Currently we're only implementing arithmetic expressions and some comparison operators, e.g. `1 + 1  * (20 - 10) >= 5`.
+
+So what are we actually doing in this tree-walk interpreter?
+
+- We're visiting the nodes in a *post-order* traversal fashion.
+- We're drilling down all the way to the leaves of our AST, to the literals and return up from there.
+- We're evaluating those smallest chunks first and then building our way up to evaluating the more complex expressions.
+
+Some examples:
+
+Evaluating a literal expression (a leaf node)
+```java
+public Object visitLiteralExpr(Expr.Literal expr) {
+    return expr.value;
+}
+```
+
+Evaluating parenthesis
+```java
+public Object visitGroupingExpr(Expr.Grouping expr) {
+    return evaluate(expr.expression);
+}
+
+// the evaluate method needed for this visitor pattern
+private Object evaluate (Expr expr) {
+    return expr.accept(this);
+}
+```
+
+Evaluating a unary expression
+```java
+public Object visitUnaryExpr(Expr.Unary expr) {
+    Expr right = evaluate(expr.right);
+
+    switch (expr.operator.type) {
+        case MINUS:
+            return -(double) right;
+    }
+
+    return null;
+}
+```
+
+I think with the above more simple examples we can get the hang of what is happening.
+
+Finally one last thing we need to do is to let our user know what runtime errors might be encountered when incorrect code is run. For example what happens when a user tries to add a boolean and a number? In jlox this should be an error. Booleans in this language are their own type and don't evaluate further down to a 1 or 0 like in some other languages. Thus we should let the user know they made a mistake.
+
+So what we should do here is to throw some type of error, lets say a `RuntimeError`, and unwind where we are at in our current evaluation.
+
+## Statements and State
+
 TODO
