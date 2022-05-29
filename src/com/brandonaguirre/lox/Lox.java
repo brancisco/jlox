@@ -39,7 +39,11 @@ public class Lox {
             System.out.print("> ");
             String line = reader.readLine();
             if (line == null) break;
-            run(line);
+            try {
+                run(line);
+            } catch (RuntimeException error) {
+                // nothing I guess?
+            }
             // don't kill entire session because of an error
             errorReporter.resetError();
         }
@@ -55,11 +59,11 @@ public class Lox {
         // System.out.println("");
 
         Parser parser = new Parser(tokens);
-        Expr expr = parser.parse();
+        List<Stmt> statements = parser.parse();
 
         if (errorReporter.hadError()) return;
 
         // System.out.println(new AstPrinter().print(expr));
-        interpreter.interpret(expr);
+        interpreter.interpret(statements);
     }
 }

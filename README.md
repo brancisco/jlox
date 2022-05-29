@@ -530,4 +530,49 @@ So what we should do here is to throw some type of error, lets say a `RuntimeErr
 
 ## Statements and State
 
-TODO
+We're adding some new rules to our grammar. Specifically we're adding program, statement, exprStmt, printStmt, declaration, varDecl, and block. Here they are:
+
+```
+# Lowest precedence
+program     -> declaration* EOF ;
+declaration -> varDecl | statement ;
+statement   -> expreStmt | printStmt | block;
+block       -> "{" declaration* "}" ;
+varDecl     -> "var" IDENTIFIER ( "=" expression )? ";" ;
+exprStmt    -> expression ";" ;
+printStmt   -> "print" expression ";" ;
+expression  -> assignment ;
+assignment  -> IDENTIFIER "=" assignemnt | equality ;
+equality    -> comparison ( ( "==" | "!=" ) comparison )* ;
+comparison  -> term ( ( "<" | "<=" | ">" | ">=" ) term )* ;
+term        -> factor ( ( "+" | "-" ) factor)* ;
+factor      -> unary ( ( "/" | "*" ) unary )* ;
+unary       -> ( "!" | "-" ) unary | primary ;
+primary     -> NUMBER | STRING | "true" | "false" | "nil" | "(" expression ")" | IDENTIFIER ;
+# Highest precedence
+```
+
+### Ahhhhh, Expressions vs Statements
+
+A statement is just a unit of code that is executed but doesn't evaluate to something.
+
+An expression always evaluates to something. An expression can also be a statement (read *expression statement*.)
+
+### Var Declaration, Assignment, & Environment
+
+We want to be able to initialize variables. We'll do this with the `var` syntax. We also want to be able to mutate variables, so we need the assignment syntax as well.
+
+In order to store the state, we'll create a class called Environment. This environment will handle storing the state of the global state, and also any local scopes. We can make this Environment nested so that each time we enter a nested block, we create a new environment and keep track of the enclosing environment.
+
+Java is taking care of the garbage collection in the environments, so we don't need to worry about that.
+
+
+### Print Statement
+
+We're making print a statement in lox. It will evaluate the expression on the right hand side of `print` and print out to the console using Java's print mechanisms.
+
+### Blocks and Scope
+
+lox has lexical scoping; i.e., the scope is delineated by some syntax. In lox's case the syntax is curly braces: `{}`.
+
+Something to note is that lox allows you to shadow variables in different scopes. When we are searching for a variable, we check from the innermost scope and search outwards to try and find the variable in question.
