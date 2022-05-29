@@ -576,3 +576,26 @@ We're making print a statement in lox. It will evaluate the expression on the ri
 lox has lexical scoping; i.e., the scope is delineated by some syntax. In lox's case the syntax is curly braces: `{}`.
 
 Something to note is that lox allows you to shadow variables in different scopes. When we are searching for a variable, we check from the innermost scope and search outwards to try and find the variable in question.
+
+## Control Flow
+
+Lox supports if, else, and while and for. Let's add those grammar rules.
+
+
+Below is what we add to our grammar to support if statements.
+
+```
+statement     -> exprStmt | ifStmt | printStmt | block ;
+ifStmt        -> if "(" expression ")" statement ( else statement )? ;
+```
+
+> Note the ambiguity brought into the grammar by the if statement. When we have multiple if else statements nested, which else belongs to which if.
+
+Below is the grammar we add to support logical `and` and `or`.
+
+```
+expression    -> assignment ;
+assignment    -> IDENTIFIER "=" assignment | logic_or ;
+logic_or      -> logic_and ( "or" logic_and )* ;
+logic_and     -> equality ( "and" equality )* ;
+```
